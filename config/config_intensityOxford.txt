@@ -2,7 +2,7 @@
 num_points = 4096
 max_distance = 100
 dataset_name = IntensityOxford
-dataset_folder = /ourdata_adas/IntensityOxford
+dataset_folder = /home/silvey/Documents/GitHub/IntensityOxford
 
 [TRAIN]
 num_workers = 4
