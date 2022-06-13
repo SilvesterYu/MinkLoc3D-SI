@@ -105,9 +105,9 @@ python generate_test_sets_intensityOxford.py
 
 ### Changes to Make Before Running
 
-(1) In config/config_usyd.txt, change dataset_folder path to <path_to_your_file>/USyd
+(1) In config/config_usyd.txt, change dataset_folder path to `<path_to_your_file>/USyd`
 
-(2) In config/config_intensityOxford.txt, change dataset_folder path to <path_to_your_file>/IntensityOxford
+(2) In config/config_intensityOxford.txt, change dataset_folder path to `<path_to_your_file>/IntensityOxford`
 
 ### Training
 To train **MinkLoc3D-SI** network, prepare the data as described above.
