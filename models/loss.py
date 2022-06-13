@@ -58,6 +58,9 @@ class HardTripletMinerWithMasks:
 
 
 def get_max_per_row(mat, mask):
+    # -- Do casting to get uint.8 -- #
+    mask = (mask > 0).type(torch.uint8) 
+    # print(type(mask))
     non_zero_rows = torch.any(mask, dim=1)
     mat_masked = mat.clone()
     mat_masked[~mask] = 0
@@ -65,6 +68,8 @@ def get_max_per_row(mat, mask):
 
 
 def get_min_per_row(mat, mask):
+    # -- Do casting to get uint.8 -- #
+    mask = (mask > 0).type(torch.uint8) 
     non_inf_rows = torch.any(mask, dim=1)
     mat_masked = mat.clone()
     mat_masked[~mask] = float('inf')
