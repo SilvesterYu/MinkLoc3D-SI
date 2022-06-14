@@ -1,0 +1,4 @@
+minkloc_config.txt, config_usyd.txt, model_MinkFPN_GeM_20220613_1608, 5.73, 0.53, 5.73, 0.53
+minkloc_config.txt, config_intensityOxford.txt, model_MinkFPN_GeM_20220613_2133, 6.97, 1.67, 6.97, 1.67
+minkloc_config.txt, config_intensityOxford.txt, model_MinkFPN_GeM_20220614_1136, 5.21, 1.53, 5.21, 1.53
+minkloc_config.txt, config_intensityOxford.txt, model_MinkFPN_GeM_20220614_1212, 4.00, 1.10, 4.00, 1.10
