@@ -128,7 +128,7 @@ To train the network, run:
 cd training
 # To train the desired model on the USyd Dataset
 python train.py --config ../config/config_usyd.txt --model_config ../models/minkloc_config.txt
-
+# To train on the Oxford Dataset
 python train.py --config ../config/config_intensityOxford.txt --model_config ../models/minkloc_config.txt
 ```
 ### Evaluation
