@@ -128,6 +128,8 @@ To train the network, run:
 cd training
 # To train the desired model on the USyd Dataset
 python train.py --config ../config/config_usyd.txt --model_config ../models/minkloc_config.txt
+
+python train.py --config ../config/config_intensityOxford.txt --model_config ../models/minkloc_config.txt
 ```
 ### Evaluation
 Pre-trained MinkLoc3D-SI trained on USyd is available in the `weights` folder. To evaluate run the following command:
