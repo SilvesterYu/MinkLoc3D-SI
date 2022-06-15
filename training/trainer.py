@@ -131,9 +131,18 @@ def do_train(dataloaders, params: MinkLocParams, debug=False, visualize=False):
             running_stats = []  # running stats for the current epoch
 
             count_batches = 0
+            # original
             for batch, positives_mask, negatives_mask in dataloaders[phase]:
                 # batch is (batch_size, n_points, 3) tensor
                 # labels is list with indexes of elements forming a batch
+                '''
+                print("----- dataloaders phase -----")
+                print(dataloaders[phase])
+                print("---trainer pos mask---")
+                print(positives_mask)
+                print("---trainer neg mask---")
+                print(negatives_mask)
+                '''
                 count_batches += 1
                 batch_stats = {}
 
@@ -159,6 +168,8 @@ def do_train(dataloaders, params: MinkLocParams, debug=False, visualize=False):
                     # Compute embeddings of all elements
                     embeddings = model(batch)
                     loss, temp_stats, _ = loss_fn(embeddings, positives_mask, negatives_mask)
+                    # print("+"*50)
+                    # print(temp_stats)
 
                     temp_stats = tensors_to_numbers(temp_stats)
                     batch_stats.update(temp_stats)

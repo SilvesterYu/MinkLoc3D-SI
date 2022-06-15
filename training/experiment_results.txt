@@ -2,3 +2,11 @@ minkloc_config.txt, config_usyd.txt, model_MinkFPN_GeM_20220613_1608, 5.73, 0.53
 minkloc_config.txt, config_intensityOxford.txt, model_MinkFPN_GeM_20220613_2133, 6.97, 1.67, 6.97, 1.67
 minkloc_config.txt, config_intensityOxford.txt, model_MinkFPN_GeM_20220614_1136, 5.21, 1.53, 5.21, 1.53
 minkloc_config.txt, config_intensityOxford.txt, model_MinkFPN_GeM_20220614_1212, 4.00, 1.10, 4.00, 1.10
+minkloc_config.txt, config_intensityOxford.txt, model_MinkFPN_GeM_20220614_1401, 5.74, 1.44, 5.74, 1.44
+minkloc_config.txt, config_usyd.txt, model_MinkFPN_GeM_20220614_1416, 2.29, 0.31, 2.29, 0.31
+minkloc_config.txt, config_usyd.txt, model_MinkFPN_GeM_20220614_1536, 5.42, 0.65, 5.42, 0.65
+minkloc_config.txt, config_intensityOxford.txt, model_MinkFPN_GeM_20220614_2145, 5.04, 1.38, 5.04, 1.38
+minkloc_config.txt, config_intensityOxford.txt, model_MinkFPN_GeM_20220614_2238, 5.89, 1.25, 5.89, 1.25
+minkloc_config.txt, config_intensityOxford.txt, model_MinkFPN_GeM_20220615_0931, 4.18, 1.21, 4.18, 1.21
+minkloc_config.txt, config_intensityOxford.txt, model_MinkFPN_GeM_20220615_0955, 76.88, 58.73, 76.88, 58.73
+minkloc_config.txt, config_intensityOxford.txt, model_MinkFPN_GeM_20220615_1026, 93.20, 82.61, 93.20, 82.61
