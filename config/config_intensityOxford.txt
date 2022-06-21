@@ -23,7 +23,3 @@ normalize_embeddings = False
 margin = 0.2
 
 train_file = intensityOxford_training_queries.pickle
-
-
-
-
