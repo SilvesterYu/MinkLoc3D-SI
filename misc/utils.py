@@ -29,6 +29,7 @@ class ModelParams:
         #######################################################################
 
         if 'MinkFPN' in self.model:
+            print("--- here ---")
             # Models using MinkowskiEngine
             self.mink_quantization_size = [float(item) for item in params['mink_quantization_size'].split(',')]
             self.version = params['version']
@@ -181,6 +182,7 @@ class MinkLocParams:
         assert len(self.eval_database_files) == len(self.eval_query_files)
 
         # Read model parameters
+        print("---here----")
         self.model_params = ModelParams(self.model_params_path)
 
         self._check_params()
