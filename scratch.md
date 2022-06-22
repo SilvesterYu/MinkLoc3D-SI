@@ -8,7 +8,7 @@ python train.py --config ../config/config_usyd.txt --model_config ../models/mink
 
 **params**: parameters cooresponding to the specified config and model_config, returned by MinkLocParams class in misc/utils.py (a class for fetching specific params from the config filess)
 
-**dataloaders**: dataloaders according to **params**
+**dataloaders**: dataloaders according to **params**, returned from make_dataloaders() in datasets/dataset_utils.py.
 
 **do_train()**: called from training/trainer.py. The main function for the training process.
 
@@ -69,7 +69,7 @@ scheduler provides several methods to adjust the learning rate based on the numb
 
 
 
-
+---
 
 ## models/minkloc.py
 
@@ -83,3 +83,34 @@ it inherits the train() and eval() functions from torch.nn.Module.
 
 eval() sets module in evaluation mode. Equivalent with self.train(False). It returns a Module. train() sets the module in training mode. Also returns a Module.
 
+forward() method is called in _call__ function of nn.Modules. so when we run model(input) the forward method is called.
+
+---
+
+## datasets/dataset_utils.py
+
+**make_dataloaders()**: returns a dict() such as {'train': <torch.utils.data.dataloader.DataLoader object at 0x7f043ecf5460>}.
+
+In it, the original dataset is in a variable **datasets**, which is returned by **make_datasets()** function in the same file. 
+
+**make_datasets()**: Create training and validation datasets.
+
+returns something like {'train': <datasets.oxford.IntensityDataset object at 0x7f77b2abaca0>} which comes from **IntensityDataset()** and **OxfordDataset()** objects in datasets/oxford.py. IntensityDataset() object takes OxfordDataset() object as super class. 
+
+---
+
+## datasets/oxford.py
+
+**class OxfordDataset(Dataset)**: Dataset wrapper for Oxford laser scans dataset from PointNetVLAD project, takes torch.utils.data.Dataset as a superclass. 
+
+If query files are alreaady processed and cached, then load preprocessed query files from the cached file path. Only if it is not there will it load and convert to biearray and such.
+
+the **preprocess_queries()** function read through files such as `weeks/output_week1/pointclouds_with_locations_5m/1520479832089447.bin`, from week1 to week 52. each query is a file path. self.query is something like {key:{'query':file,'positives':[files],'negatives:[files], 'neighbors':[keys]}, key:...}
+
+positives and negatives here refer to positive and negative point clouds. 
+
+**make_collate_fn()**: returns a **collate_fn(data_list)** function according to its inputs. **train_collate_fn** and **val_collate_fn** are both gotten from make_collate_fn(). 
+
+Here the `batch` dictionary returned in the inner function contains the batched spherical coordinates and features. 
+
+**to_spherical()**: turn coordinates to spherical coordinates
