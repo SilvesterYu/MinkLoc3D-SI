@@ -114,3 +114,33 @@ positives and negatives here refer to positive and negative point clouds.
 Here the `batch` dictionary returned in the inner function contains the batched spherical coordinates and features. 
 
 **to_spherical()**: turn coordinates to spherical coordinates
+
+---
+
+# Edits made:
+
+`models/minkloc_config` mink_quantization_size, conv0_kernel_size = 5
+
+`models/minkfpn.py` # -- original -- #
+
+# To change the coordinate system:
+
+`models/minkloc_config` 
+
+mink_quantization_size
+
+`models/minkfpn.py` 
+
+ResNetBase.__init__(self, in_channels, out_channels, D=xxxxx)
+
+`dataset/dataset_utils.py` 
+
+spherical_points.append([r, theta, point[3]])
+
+c, f = ME.utils.sparse_quantize(coordinates=spherical_e[:, :2], features=spherical_e[:, 2].reshape([-1, 1]),
+                                                    quantization_size=mink_quantization_size)
+
+`config/config_usyd.txt`
+
+batch_size
+

@@ -1,4 +1,4 @@
-bitarray==2.4.1
+bitarray==1.6.0
 MinkowskiEngine==0.5.4
 numba==0.55.1
 numpy==1.21.5
