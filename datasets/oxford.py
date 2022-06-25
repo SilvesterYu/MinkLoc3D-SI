@@ -33,22 +33,32 @@ class OxfordDataset(Dataset):
         if DEBUG:
             print('Initializing dataset: {}'.format(dataset_path))
             print(psutil.virtual_memory())
-        assert os.path.exists(dataset_path), 'Cannot access dataset path: {}'.format(dataset_path)
+        assert os.path.exists(
+            dataset_path), 'Cannot access dataset path: {}'.format(dataset_path)
         self.dataset_path = dataset_path
         self.query_filepath = os.path.join(dataset_path, query_filename)
-        assert os.path.exists(self.query_filepath), 'Cannot access query file: {}'.format(self.query_filepath)
+        assert os.path.exists(
+            self.query_filepath), 'Cannot access query file: {}'.format(self.query_filepath)
         self.transform = transform
         self.set_transform = set_transform
         self.max_elems = max_elems
         self.n_points = n_points  # pointclouds in the dataset are downsampled to 4096 points
         self.max_distance = max_distance  # maximum point cloud range for
 
-        cached_query_filepath = os.path.splitext(self.query_filepath)[0] + '_cached.pickle'
+        cached_query_filepath = os.path.splitext(self.query_filepath)[
+            0] + '_cached.pickle'
+
+
+        print("--- cached pickle path---")
+        print(cached_query_filepath)
+
         if not os.path.exists(cached_query_filepath):
             # Pre-process query file
-            self.queries = self.preprocess_queries(self.query_filepath, cached_query_filepath)
+            self.queries = self.preprocess_queries(
+                self.query_filepath, cached_query_filepath)
         else:
-            print('Loading preprocessed query file: {}...'.format(cached_query_filepath))
+            print('Loading preprocessed query file: {}...'.format(
+                cached_query_filepath))
             with open(cached_query_filepath, 'rb') as handle:
                 # key:{'query':file,'positives':[files],'negatives:[files], 'neighbors':[keys]}
                 self.queries = pickle.load(handle)
@@ -62,7 +72,6 @@ class OxfordDataset(Dataset):
                                          'positives': self.queries[ndx]['positives'][0:max_elems],
                                          'negatives': self.queries[ndx]['negatives'][0:max_elems]}
             self.queries = filtered_queries
-
         print('{} queries in the dataset'.format(len(self)))
 
     def preprocess_queries(self, query_filepath, cached_query_filepath):
@@ -70,13 +79,24 @@ class OxfordDataset(Dataset):
         with open(query_filepath, 'rb') as handle:
             # key:{'query':file,'positives':[files],'negatives:[files], 'neighbors':[keys]}
             queries = pickle.load(handle)
-
+            """
+            print("--- queries ---")
+            print(type(queries))
+            to_check = list(queries.keys())[:10]
+            for i in to_check:
+                print(i, len(queries[i]["positives"]), len(queries[i]["negatives"]), len(queries[i]["positives"])+len(queries[i]["negatives"]))
+            """
         # Convert to bitarray
         for ndx in tqdm.tqdm(queries):
             queries[ndx]['positives'] = set(queries[ndx]['positives'])
             queries[ndx]['negatives'] = set(queries[ndx]['negatives'])
-            pos_mask = [e_ndx in queries[ndx]['positives'] for e_ndx in range(len(queries))]
-            neg_mask = [e_ndx in queries[ndx]['negatives'] for e_ndx in range(len(queries))]
+            # marking positive queries as 1, rest as 0
+            pos_mask = [e_ndx in queries[ndx]['positives']
+                        for e_ndx in range(len(queries))]
+            # marking negative queries as 1, rest as 0
+            neg_mask = [e_ndx in queries[ndx]['negatives']
+                        for e_ndx in range(len(queries))]
+            # instead of a list of query indices, the positives and negatives of a query are a bitarray masks
             queries[ndx]['positives'] = bitarray(pos_mask)
             queries[ndx]['negatives'] = bitarray(neg_mask)
 
@@ -98,7 +118,8 @@ class OxfordDataset(Dataset):
         # in batched clouds - required by augmentation functions
         padlen = self.n_points - len(query_pc)
         if padlen > 0:
-            query_pc = torch.nn.functional.pad(query_pc, (0, 0, 0, padlen), "constant", 0)
+            query_pc = torch.nn.functional.pad(
+                query_pc, (0, 0, 0, padlen), "constant", 0)
         elif padlen < 0:
             query_pc = query_pc[:self.n_points]
         return query_pc, ndx
@@ -130,7 +151,8 @@ class OxfordDataset(Dataset):
         file_path = os.path.join(self.dataset_path, filename)
         pc = np.fromfile(file_path, dtype=np.float64)
         # coords are within -1..1 range in each dimension
-        assert pc.shape[0] == self.n_points * 3, "Error in point cloud shape: {}".format(filename)
+        assert pc.shape[0] == self.n_points * \
+            3, "Error in point cloud shape: {}".format(filename)
         pc = np.reshape(pc, (pc.shape[0] // 3, 3))
         pc = pc[np.linalg.norm(pc[:, :3], axis=1) < self.max_distance]
 
@@ -147,7 +169,8 @@ class IntensityDataset(OxfordDataset):
                  set_transform=None, max_elems=None):
         # transform: transform applied to each element
         # set transform: transform applied to the entire set (anchor+positives+negatives); the same transform is applied
-        super().__init__(dataset_path, query_filename, n_points, max_distance, transform, set_transform, max_elems)
+        super().__init__(dataset_path, query_filename, n_points,
+                         max_distance, transform, set_transform, max_elems)
         self.n_points = n_points
         self.max_distance = max_distance  # maximum point cloud range for
         self.use_intensity = use_intensity
@@ -171,7 +194,8 @@ class IntensityDataset(OxfordDataset):
         # in batched clouds - required by augmentation functions
         padlen = self.n_points - len(query_pc)
         if padlen > 0:
-            query_pc = torch.nn.functional.pad(query_pc, (0, 0, 0, padlen), "constant", 0)
+            query_pc = torch.nn.functional.pad(
+                query_pc, (0, 0, 0, padlen), "constant", 0)
         elif padlen < 0:
             query_pc = query_pc[:self.n_points]
         return query_pc, ndx
@@ -201,7 +225,8 @@ class TrainTransform:
             t = [JitterPoints(sigma=0.001, clip=0.002), RemoveRandomPoints(r=(0.0, 0.1)),
                  RandomTranslation(max_delta=0.01), RemoveRandomBlock(p=0.4)]
         else:
-            raise NotImplementedError('Unknown aug_mode: {}'.format(self.aug_mode))
+            raise NotImplementedError(
+                'Unknown aug_mode: {}'.format(self.aug_mode))
         self.transform = transforms.Compose(t)
 
     def __call__(self, e):
@@ -229,7 +254,8 @@ class RandomFlip:
     def __init__(self, p):
         # p = [p_x, p_y, p_z] probability of flipping each axis
         assert len(p) == 3
-        assert 0 < sum(p) <= 1, 'sum(p) must be in (0, 1] range, is: {}'.format(sum(p))
+        assert 0 < sum(
+            p) <= 1, 'sum(p) must be in (0, 1] range, is: {}'.format(sum(p))
         self.p = p
         self.p_cum_sum = np.cumsum(p)
 
@@ -267,14 +293,17 @@ class RandomRotation:
             axis = self.axis
         else:
             axis = np.random.rand(3) - 0.5
-        R = self._M(axis, (np.pi * self.max_theta / 180) * 2 * (np.random.rand(1) - 0.5))
+        R = self._M(axis, (np.pi * self.max_theta / 180)
+                    * 2 * (np.random.rand(1) - 0.5))
         if self.max_theta2 is None:
             coords_xyz = coords_xyz @ R
         else:
-            R_n = self._M(np.random.rand(3) - 0.5, (np.pi * self.max_theta2 / 180) * 2 * (np.random.rand(1) - 0.5))
+            R_n = self._M(np.random.rand(
+                3) - 0.5, (np.pi * self.max_theta2 / 180) * 2 * (np.random.rand(1) - 0.5))
             coords_xyz = coords_xyz @ R @ R_n
         if coords.shape[-1] == 4:  # with intensity
-            coords = torch.cat((coords_xyz, coords[:, :, 3].unsqueeze(dim=2)), axis=2)
+            coords = torch.cat(
+                (coords_xyz, coords[:, :, 3].unsqueeze(dim=2)), axis=2)
         else:  # no intensity
             coords = coords_xyz
         return coords
@@ -306,7 +335,8 @@ class RandomShear:
     def __call__(self, coords):
         T = np.eye(3) + self.delta * np.random.randn(3, 3)
         if coords.shape[-1] == 4:  # with intensity
-            coords = np.append(coords[:, :, :3] @ T.astype(np.float32), coords[:, :, 3].unsqueeze(dim=2), axis=2)
+            coords = np.append(
+                coords[:, :, :3] @ T.astype(np.float32), coords[:, :, 3].unsqueeze(dim=2), axis=2)
         else:  # no intensity
             coords = coords @ T.astype(np.float32)
         return coords
@@ -334,7 +364,8 @@ class JitterPoints:
         sample_shape = (e.shape[0],)
         if self.p < 1.:
             # Create a mask for points to jitter
-            m = torch.distributions.categorical.Categorical(probs=torch.tensor([1 - self.p, self.p]))
+            m = torch.distributions.categorical.Categorical(
+                probs=torch.tensor([1 - self.p, self.p]))
             mask = m.sample(sample_shape=sample_shape)
         else:
             mask = torch.ones(sample_shape, dtype=torch.int64)
@@ -370,7 +401,8 @@ class RemoveRandomPoints:
             # Randomly select removal ratio
             r = random.uniform(self.r_min, self.r_max)
 
-        mask = np.random.choice(range(n), size=int(n * r), replace=False)  # select elements to remove
+        mask = np.random.choice(range(n), size=int(
+            n * r), replace=False)  # select elements to remove
         e[mask] = torch.zeros_like(e[mask])
         return e
 
@@ -407,8 +439,10 @@ class RemoveRandomBlock:
 
     def __call__(self, coords):
         if random.random() < self.p:
-            x, y, w, h = self.get_params(coords)  # Fronto-parallel cuboid to remove
-            mask = (x < coords[..., 0]) & (coords[..., 0] < x + w) & (y < coords[..., 1]) & (coords[..., 1] < y + h)
+            # Fronto-parallel cuboid to remove
+            x, y, w, h = self.get_params(coords)
+            mask = (x < coords[..., 0]) & (
+                coords[..., 0] < x + w) & (y < coords[..., 1]) & (coords[..., 1] < y + h)
             coords[mask] = torch.zeros_like(coords[mask])
         return coords
 

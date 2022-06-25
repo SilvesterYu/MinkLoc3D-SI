@@ -22,7 +22,10 @@ class MinkFPN(ResNetBase):
         self.planes = planes
         self.lateral_dim = out_channels
         self.init_dim = planes[0]
-        ResNetBase.__init__(self, in_channels, out_channels, D=3)
+        # -- changed
+        ResNetBase.__init__(self, in_channels, out_channels, D=5)
+        # -- original -- #
+        # ResNetBase.__init__(self, in_channels, out_channels, D=3)
 
     def network_initialization(self, in_channels, out_channels, D):
         assert len(self.layers) == len(self.planes)
@@ -36,8 +39,10 @@ class MinkFPN(ResNetBase):
 
         # The first convolution is special case, with kernel size = 5
         self.inplanes = self.planes[0]
+        print("--- D ---: ", D)
         self.conv0 = ME.MinkowskiConvolution(in_channels, self.inplanes, kernel_size=self.conv0_kernel_size,
                                              dimension=D)
+        print("--- self.connv0 dim ---: ", self.conv0.dimension)
         self.bn0 = ME.MinkowskiBatchNorm(self.inplanes)
 
         for plane, layer in zip(self.planes, self.layers):
@@ -67,6 +72,11 @@ class MinkFPN(ResNetBase):
         # *** BOTTOM-UP PASS ***
         # First bottom-up convolution is special (with bigger stride)
         feature_maps = []
+        """
+        print("--- forward ---")
+        print("--- x ---: ", x)
+        """
+        
         x = self.conv0(x)
         x = self.bn0(x)
         x = self.relu(x)

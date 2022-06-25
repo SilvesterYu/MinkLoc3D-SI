@@ -18,12 +18,14 @@ def make_datasets(params: MinkLocParams, debug=False):
     datasets = {}
     train_transform = TrainTransform(params.aug_mode)
     train_set_transform = TrainSetTransform(params.aug_mode)
+
     if debug:
         max_elems = 1000
     else:
         max_elems = None
 
-    use_intensity = params.model_params.version in ['MinkLoc3D-I', 'MinkLoc3D-SI']
+    use_intensity = params.model_params.version in [
+        'MinkLoc3D-I', 'MinkLoc3D-SI']
 
     if params.dataset_name in ['USyd', 'IntensityOxford']:
         datasets['train'] = IntensityDataset(params.dataset_folder, params.train_file, params.num_points,
@@ -48,7 +50,8 @@ def make_datasets(params: MinkLocParams, debug=False):
 
 def make_eval_dataset(params: MinkLocParams):
     # Create evaluation datasets
-    use_intensity = params.model_params.version in ['MinkLoc3D-I', 'MinkLoc3D-SI']
+    use_intensity = params.model_params.version in [
+        'MinkLoc3D-I', 'MinkLoc3D-SI']
 
     if params.dataset_name in ['USyd', 'IntensityOxford']:
         dataset = IntensityDataset(params.dataset_folder, params.test_file, params.num_points,
@@ -66,7 +69,8 @@ def make_collate_fn(dataset: OxfordDataset, version, dataset_name, mink_quantiza
         # Constructs a batch object
         clouds = [e[0] for e in data_list]
         labels = [e[1] for e in data_list]
-        batch = torch.stack(clouds, dim=0)       # Produces (batch_size, n_points, point_dim) tensor
+        # Produces (batch_size, n_points, point_dim) tensor
+        batch = torch.stack(clouds, dim=0)
         if dataset.set_transform is not None:
             # Apply the same transformation on all dataset elements
             batch = dataset.set_transform(batch)
@@ -98,8 +102,10 @@ def make_collate_fn(dataset: OxfordDataset, version, dataset_name, mink_quantiza
                 coords = []
                 for e in batch:
                     # Convert coordinates to spherical
-                    spherical_e = torch.tensor(to_spherical(e.numpy(), dataset_name), dtype=torch.float)
-                    c = ME.utils.sparse_quantize(coordinates=spherical_e[:, :3], quantization_size=mink_quantization_size)
+                    spherical_e = torch.tensor(to_spherical(
+                        e.numpy(), dataset_name), dtype=torch.float)
+                    c = ME.utils.sparse_quantize(
+                        coordinates=spherical_e[:, :3], quantization_size=mink_quantization_size)
                     coords.append(c)
 
                 coords = ME.utils.batched_coordinates(coords)
@@ -110,20 +116,36 @@ def make_collate_fn(dataset: OxfordDataset, version, dataset_name, mink_quantiza
                 feats = []
                 for e in batch:
                     # Convert coordinates to spherical
-                    spherical_e = torch.tensor(to_spherical(e.numpy(), dataset_name), dtype=torch.float)
+                    spherical_e = torch.tensor(to_spherical(
+                        e.numpy(), dataset_name), dtype=torch.float)
+                    # -- changed
+                    c, f = ME.utils.sparse_quantize(coordinates=spherical_e[:, :5], features=spherical_e[:, 5].reshape([-1, 1]),
+                                                    quantization_size=mink_quantization_size)
+                    """
+                    # -- original below -- #
                     c, f = ME.utils.sparse_quantize(coordinates=spherical_e[:, :3], features=spherical_e[:, 3].reshape([-1, 1]),
                                                     quantization_size=mink_quantization_size)
+                    """
                     coords.append(c)
                     feats.append(f)
+
                 coords = ME.utils.batched_coordinates(coords)
                 feats = torch.cat(feats, dim=0)
+                """
+                print("--- coords and fears ----")
+                print(coords)
+                print("----- f -----")
+                print(feats)
+                """
 
             batch = {'coords': coords, 'features': feats}
 
         # Compute positives and negatives mask
         # dataset.queries[label]['positives'] is bitarray
-        positives_mask = [[dataset.queries[label]['positives'][e] for e in labels] for label in labels]
-        negatives_mask = [[dataset.queries[label]['negatives'][e] for e in labels] for label in labels]
+        positives_mask = [[dataset.queries[label]['positives'][e]
+                           for e in labels] for label in labels]
+        negatives_mask = [[dataset.queries[label]['negatives'][e]
+                           for e in labels] for label in labels]
 
         positives_mask = torch.tensor(positives_mask)
         negatives_mask = torch.tensor(negatives_mask)
@@ -143,6 +165,15 @@ def make_dataloaders(params: MinkLocParams, debug=False):
     :return:
     """
     datasets = make_datasets(params, debug=debug)
+    """
+    print("--- dataset utils to_check ---")
+    to_check = list(datasets["train"].queries.keys())[:10]
+    print(to_check)
+    for i in to_check:
+        print(datasets["train"].queries[i]["query"], datasets["train"].queries[i]["positives"])
+    """
+    print("--- quantization size --- ")
+    print(params.model_params.mink_quantization_size)
 
     dataloders = {}
     train_sampler = BatchSampler(datasets['train'], batch_size=params.batch_size,
@@ -155,14 +186,14 @@ def make_dataloaders(params: MinkLocParams, debug=False):
                                      num_workers=params.num_workers, pin_memory=True)
 
     if 'val' in datasets:
-        val_sampler = BatchSampler(datasets['val'], batch_size=params.batch_size)
+        val_sampler = BatchSampler(
+            datasets['val'], batch_size=params.batch_size)
         # Collate function collates items into a batch and applies a 'set transform' on the entire batch
         # Currently validation dataset has empty set_transform function, but it may change in the future
         val_collate_fn = make_collate_fn(datasets['val'],  params.model_params.version, params.dataset_name,
                                          params.model_params.mink_quantization_size)
         dataloders['val'] = DataLoader(datasets['val'], batch_sampler=val_sampler, collate_fn=val_collate_fn,
                                        num_workers=params.num_workers, pin_memory=True)
-
     return dataloders
 
 
@@ -185,6 +216,7 @@ def to_spherical(points, dataset_name):
             # VLP-16 has 2 deg VRes and (+15, -15 VFoV).
             # Phi calculated from the vertical axis, so (75, 105)
             # Shifted to (0, 30)
+            #print("--- point ---: ", point)
             phi = (np.arccos(point[2] / r) * 180 / np.pi) - 75
 
         elif dataset_name in ['IntensityOxford', 'Oxford']:
@@ -199,7 +231,10 @@ def to_spherical(points, dataset_name):
             phi = (np.arccos(point[2] / r) * 180 / np.pi) - 88
 
         if point.shape[-1] == 4:
-            spherical_points.append([r, theta, phi, point[3]])
+            # -- changed
+            spherical_points.append([r, theta, phi, theta, phi, point[3]])
+            # -- original below -- #
+            # spherical_points.append([r, theta, phi, point[3]])
         else:
             spherical_points.append([r, theta, phi])
 
