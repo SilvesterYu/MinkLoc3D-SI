@@ -23,7 +23,7 @@ class MinkFPN(ResNetBase):
         self.lateral_dim = out_channels
         self.init_dim = planes[0]
         # -- changed
-        ResNetBase.__init__(self, in_channels, out_channels, D=5)
+        ResNetBase.__init__(self, in_channels, out_channels, D=3)
         # -- original -- #
         # ResNetBase.__init__(self, in_channels, out_channels, D=3)
 

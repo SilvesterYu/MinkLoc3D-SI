@@ -119,7 +119,7 @@ def make_collate_fn(dataset: OxfordDataset, version, dataset_name, mink_quantiza
                     spherical_e = torch.tensor(to_spherical(
                         e.numpy(), dataset_name), dtype=torch.float)
                     # -- changed
-                    c, f = ME.utils.sparse_quantize(coordinates=spherical_e[:, :5], features=spherical_e[:, 5].reshape([-1, 1]),
+                    c, f = ME.utils.sparse_quantize(coordinates=spherical_e[:, :3], features=spherical_e[:, 3].reshape([-1, 1]),
                                                     quantization_size=mink_quantization_size)
                     """
                     # -- original below -- #
@@ -232,7 +232,7 @@ def to_spherical(points, dataset_name):
 
         if point.shape[-1] == 4:
             # -- changed
-            spherical_points.append([r, theta, phi, theta, phi, point[3]])
+            spherical_points.append([r, theta, phi, point[3]])
             # -- original below -- #
             # spherical_points.append([r, theta, phi, point[3]])
         else:
