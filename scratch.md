@@ -139,10 +139,10 @@ ResNetBase.__init__(self, in_channels, out_channels, D=3)
 
 ## (3) `datasets/dataset_utils.py` 
 
-modify the "3" into "6"
+modify the thing appended (added point[0] [1] [2]).
 
 ```python
-spherical_points.append([r, theta, point[3]])
+spherical_points.append([r, theta, phi, point[0], point[1], point[2], point[3]])
 ```
 modify the two "3"s into "6"s
 ```python
