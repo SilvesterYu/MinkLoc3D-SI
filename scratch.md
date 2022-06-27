@@ -151,11 +151,13 @@ c, f = ME.utils.sparse_quantize(coordinates=spherical_e[:, :3], features=spheric
 
 ## (4) `eval/evaluate.py`
 
+modify the two "3"s to "6"s
+
 ```python
 elif params.model_params.version in ['MinkLoc3D-I', 'MinkLoc3D-SI']:
-                sparse_field = ME.TensorField(features=x[:, 6].reshape([-1, 1]),
+                sparse_field = ME.TensorField(features=x[:, 3].reshape([-1, 1]),
                                               coordinates=ME.utils.batched_coordinates(
-                                                  [x[:, :6] / np.array(params.model_params.mink_quantization_size)],
+                                                  [x[:, :3] / np.array(params.model_params.mink_quantization_size)],
                                                   dtype=torch.int),
                                               quantization_mode=ME.SparseTensorQuantizationMode.UNWEIGHTED_AVERAGE,
                                               minkowski_algorithm=ME.MinkowskiAlgorithm.SPEED_OPTIMIZED).sparse() 
