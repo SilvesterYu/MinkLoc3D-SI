@@ -119,28 +119,54 @@ Here the `batch` dictionary returned in the inner function contains the batched 
 
 # Edits made:
 
-`models/minkloc_config` mink_quantization_size, conv0_kernel_size = 5
-
-`models/minkfpn.py` # -- original -- #
-
-# To change the coordinate system:
+## To change the coordinate system:
 
 `models/minkloc_config` 
-
+modify it so there are 6 numbers
+```
 mink_quantization_size
+```
+modify kernel size to 6
+```
+conv0_kernel_size
+```
 
 `models/minkfpn.py` 
+modify D = 6
+```python
+ResNetBase.__init__(self, in_channels, out_channels, D=3)
+```
 
-ResNetBase.__init__(self, in_channels, out_channels, D=xxxxx)
+`datasets/dataset_utils.py` 
 
-`dataset/dataset_utils.py` 
+modify the "3" into "6"
 
+```python
 spherical_points.append([r, theta, point[3]])
-
-c, f = ME.utils.sparse_quantize(coordinates=spherical_e[:, :2], features=spherical_e[:, 2].reshape([-1, 1]),
-                                                    quantization_size=mink_quantization_size)
+```
+modify the two "3"s into "6"s
+```python
+c, f = ME.utils.sparse_quantize(coordinates=spherical_e[:, :3], features=spherical_e[:, 3].reshape([-1, 1]),quantization_size=mink_quantization_size)  
+```
 
 `config/config_usyd.txt`
 
-batch_size
+optional, can decrease it
+
+```
+batch_size 
+```
+
+`eval/evaluate.py`
+
+```python
+elif params.model_params.version in ['MinkLoc3D-I', 'MinkLoc3D-SI']:
+                sparse_field = ME.TensorField(features=x[:, 6].reshape([-1, 1]),
+                                              coordinates=ME.utils.batched_coordinates(
+                                                  [x[:, :6] / np.array(params.model_params.mink_quantization_size)],
+                                                  dtype=torch.int),
+                                              quantization_mode=ME.SparseTensorQuantizationMode.UNWEIGHTED_AVERAGE,
+                                              minkowski_algorithm=ME.MinkowskiAlgorithm.SPEED_OPTIMIZED).sparse() 
+```
+
 
