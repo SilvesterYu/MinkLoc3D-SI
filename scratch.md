@@ -126,7 +126,7 @@ modify it so there are 6 numbers
 ```
 mink_quantization_size
 ```
-modify kernel size to 6
+modify kernel size to 5
 ```
 conv0_kernel_size
 ```
